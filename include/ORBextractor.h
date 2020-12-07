@@ -16,6 +16,15 @@
 * If not, see <http://www.gnu.org/licenses/>.
 */
 
+//注释@qxiaofan
+//email:vision3d@yeah.net
+
+//对于ORBextractor模块的流程简单梳理如下：
+//step-1:构造图像金字塔。
+//step-2:提取FAST角点，并对其进行均匀化分布，同时计算特征点方向。
+//step-3：高斯滤波。
+//step-4:计算描述子。
+
 #ifndef ORBEXTRACTOR_H
 #define ORBEXTRACTOR_H
 
@@ -30,8 +39,17 @@ namespace ORB_SLAM3
 class ExtractorNode
 {
 public:
+    /** @brief 构造函数 */
     ExtractorNode():bNoMore(false){}
 
+    /**
+    * @brief 在八叉树分配特征点的过程中，实现一个节点分裂为4个节点的操作
+    *
+    * @param[out] n1   分裂的节点1
+    * @param[out] n2   分裂的节点2
+    * @param[out] n3   分裂的节点3
+    * @param[out] n4   分裂的节点4
+    */
     void DivideNode(ExtractorNode &n1, ExtractorNode &n2, ExtractorNode &n3, ExtractorNode &n4);
 
     std::vector<cv::KeyPoint> vKeys;

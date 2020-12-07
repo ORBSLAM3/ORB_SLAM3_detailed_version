@@ -16,6 +16,8 @@
 * If not, see <http://www.gnu.org/licenses/>.
 */
 
+//注释@qxiaofan
+//email:vision3d@yeah.net
 
 #ifndef ORBMATCHER_H
 #define ORBMATCHER_H

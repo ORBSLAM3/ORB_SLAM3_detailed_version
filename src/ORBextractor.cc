@@ -50,6 +50,8 @@
 *
 */
 
+//注释@qxiaofan
+//email:vision3d@yeah.net
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -144,7 +146,7 @@ namespace ORB_SLAM3
 #undef GET_VALUE
     }
 
-
+    // 这里的256个位置是基于学习的方法，根据大量数据，选择出了效果最好的256个点对位置，每次提取特征点都使用这256个位置。
     static int bit_pattern_31_[256*4] =
             {
                     8,-3, 9,5/*mean (0), correlation (0)*/,

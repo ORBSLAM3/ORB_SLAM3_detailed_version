@@ -16,6 +16,8 @@
 * If not, see <http://www.gnu.org/licenses/>.
 */
 
+//注释@qxiaofan
+//email:vision3d@yeah.net
 
 #include "ORBmatcher.h"
 
@@ -703,6 +705,15 @@ int ORBmatcher::SearchByProjection(KeyFrame* pKF, cv::Mat Scw, const std::vector
     return nmatches;
 }
 
+// SearchForInitialization主要包括的流程如下：
+// step-1: 匹配点数要大于100个才能进行初始化
+// step-2: 挑选出来的特征点所属的金字塔必须为第0层
+// step-3: 剔除那些在所选格子内，但是不属于搜索范围内的点（半径为100的范围内，如果格子内无特征点，则删除该格子，否则对该格子内的所有特征点都遍历求汉明距离）
+// step-4: 最优距离要小于50，计算最优距离和次优距离的比值（也就是老大和老二要有区分度，ratio为0.9）
+// step-5: 统计匹配点的方向直方图
+// step-6: 统计出特征点数量最多的三个方向
+// step-7: 判断第二多的数量<0.1×第一多的数量? 符合则证明第一多的为主方向
+// step-8: 判断第三多的数量<0.1×第一多的数量? 符合则证明第一和第二多的为主方向
 int ORBmatcher::SearchForInitialization(Frame &F1, Frame &F2, vector<cv::Point2f> &vbPrevMatched, vector<int> &vnMatches12, int windowSize)
 {
     int nmatches=0;
