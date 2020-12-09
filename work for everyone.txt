@@ -1,13 +1,12 @@
-CameraModels
 CameraModels/KannalaBrandt8.cpp
 CameraModels/Pinhole.cpp
 
 Atlas.cc   ---- dongyan
 Converter.cc   ---- dongxiao
-Frame.cc
-FrameDrawer.cc
+Frame.cc       ---- hongyu
+FrameDrawer.cc ---- hongyu
 G2oTypes.cc 
-ImuTypes.cc    
+ImuTypes.cc    ---- jiangbin
 Initializer.cc ----dongxiao
 KeyFrame.cc
 KeyFrameDatabase.cc
@@ -19,11 +18,11 @@ MapPoint.cc
 MLPnPsolver.cpp
 OptimizableTypes.cpp
 Optimizer.cc    ---- gaoran
-ORBextractor.cc ---- qiyong
-ORBmatcher.cc  ---- qiyong
-PnPsolver.cc
+ORBextractor.cc ---- qxiaofan
+ORBmatcher.cc  ---- qxiaofan
+PnPsolver.cc   ---- hongyu
 Sim3Solver.cc
-System.cc
+System.cc    ---- jiangbin
 Tracking.cc  ---- dongxiao
 TwoViewReconstruction.cc ---- dongxiao
 Viewer.cc
