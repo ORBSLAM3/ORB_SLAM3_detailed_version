@@ -45,7 +45,7 @@ Atlas::~Atlas()
         if(pMi)
         {
             delete pMi;
-            pMi = static_cast<Map*>(NULL);
+            pMi = static_cast<Map*>(NULL);  // 删除指针后赋值NULL，避免指向内存随机位置
 
             it = mspMaps.erase(it);
         }
@@ -54,7 +54,12 @@ Atlas::~Atlas()
 
     }
 }
-
+/**  创建新地图集
+ * @调用：在Tracking开始时，或Tracking丢失时重新创建一个新的子地图。
+ * 如果是刚开始，此时mpCurrentMap不存在，所以不执行if的代码段，而直接进行创建
+ * 如果mpCurrentMap存在，则意味着需要开始一个新的子地图，此时需要记录当前地图id，赋予原子地图最大id并将下一个id设置为新的子地图起始id
+ * 在创建新子地图时，将这一段子地图设置为active(mIsInUse=true)，并将之前的子地图设置为non-active
+ * */
 void Atlas::CreateNewMap()
 {
     unique_lock<mutex> lock(mMutexAtlas);
@@ -77,6 +82,12 @@ void Atlas::CreateNewMap()
     mspMaps.insert(mpCurrentMap);
 }
 
+
+/** 修改Map
+ * @调用：在LoopClosing的MergeLocal，融合两个子地图后调用
+ * @param pMap：融合后的地图
+ * @作用：即在active map和matched map融合后，将当前map设置为融合后的map
+ * */
 void Atlas::ChangeMap(Map* pMap)
 {
     unique_lock<mutex> lock(mMutexAtlas);
@@ -130,18 +141,24 @@ void Atlas::InformNewBigChange()
     mpCurrentMap->InformNewBigChange();
 }
 
+/** 获取地图集大变化的次数 
+ * @return：变化的次数
+ * @作用：每当地图集的当前子地图发生了回环、全局BA后，地图的变化次数会+1
+ * 在System运行时会判断子地图是否发生了重要变换，如果发生了，在显示时会进行更新。
+ **/
 int Atlas::GetLastBigChangeIdx()
 {
     unique_lock<mutex> lock(mMutexAtlas);
     return mpCurrentMap->GetLastBigChangeIdx();
 }
 
+/** 计算当前地图中，地图点的数量，用于输出调试信息 **/
 long unsigned int Atlas::MapPointsInMap()
 {
     unique_lock<mutex> lock(mMutexAtlas);
     return mpCurrentMap->MapPointsInMap();
 }
-
+/** 计算当前地图中，关键帧的数量，用于输出调试信息，以及一些其他判断 **/
 long unsigned Atlas::KeyFramesInMap()
 {
     unique_lock<mutex> lock(mMutexAtlas);
@@ -166,6 +183,7 @@ std::vector<MapPoint*> Atlas::GetReferenceMapPoints()
     return mpCurrentMap->GetReferenceMapPoints();
 }
 
+/** 按照子地图id从小到达顺序，获取全部子地图 **/
 vector<Map*> Atlas::GetAllMaps()
 {
     unique_lock<mutex> lock(mMutexAtlas);
@@ -177,7 +195,7 @@ vector<Map*> Atlas::GetAllMaps()
         }
     };
     vector<Map*> vMaps(mspMaps.begin(),mspMaps.end());
-    sort(vMaps.begin(), vMaps.end(), compFunctor());
+    sort(vMaps.begin(), vMaps.end(), compFunctor());    // 使用自定义的方法进行sort
     return vMaps;
 }
 
@@ -206,7 +224,7 @@ void Atlas::clearAtlas()
     mnLastInitKFidMap = 0;
 }
 
-Map* Atlas::GetCurrentMap()
+Map* Atlas::GetCurrentMap()     // TODO: 调用次数较多，还没搞清楚具体用途
 {
     unique_lock<mutex> lock(mMutexAtlas);
     if(!mpCurrentMap)
@@ -217,6 +235,12 @@ Map* Atlas::GetCurrentMap()
     return mpCurrentMap;
 }
 
+/** 设置为bad地图
+ * @调用：LoopClosing中两个子地图融合之后
+ * @param：pMap：将这个地图设置为bad
+ * @作用：两个子地图融合之后，首先将当前地图设置为融合后的地图，之后将融合前的active map设置为bad
+ * 并存储bad的子地图，在merge最后删掉全部bad的子地图
+ **/
 void Atlas::SetMapBad(Map* pMap)
 {
     mspMaps.erase(pMap);
@@ -225,6 +249,9 @@ void Atlas::SetMapBad(Map* pMap)
     mspBadMaps.insert(pMap);
 }
 
+/**  删除所有bad的子地图
+ * @调用：LoopClosing中完成一次LocalMerge的最后
+**/
 void Atlas::RemoveBadMaps()
 {
     /*for(Map* pMap : mspBadMaps)
@@ -259,6 +286,7 @@ bool Atlas::isImuInitialized()
     return mpCurrentMap->isImuInitialized();
 }
 
+/** 这个函数并没有用到 **/
 void Atlas::PreSave()
 {
     if(mpCurrentMap){
@@ -273,6 +301,9 @@ void Atlas::PreSave()
             return elem1->GetId() < elem2->GetId();
         }
     };
+
+    // 在mvpBackupMaps后面加入mspMpas的全部数据
+    // 关于back_inserter的详细用法参考：http://www.cplusplus.com/reference/iterator/back_inserter/
     std::copy(mspMaps.begin(), mspMaps.end(), std::back_inserter(mvpBackupMaps));
     sort(mvpBackupMaps.begin(), mvpBackupMaps.end(), compFunctor());
 
@@ -299,6 +330,7 @@ void Atlas::PreSave()
 
 }
 
+/** 这个函数并没有用到 **/
 void Atlas::PostLoad()
 {
     mvpCameras.clear();
@@ -333,6 +365,10 @@ void Atlas::PostLoad()
     cout << "Number KF:" << numKF << "; number MP:" << numMP << endl;
     mvpBackupMaps.clear();
 }
+
+
+
+/** 从这里开始，往下的函数也都没有用到 **/
 
 void Atlas::SetKeyFrameDababase(KeyFrameDatabase* pKFDB)
 {
