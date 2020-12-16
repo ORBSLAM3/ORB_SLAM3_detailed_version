@@ -50,9 +50,6 @@
 *
 */
 
-//注释@qxiaofan
-//email:vision3d@yeah.net
-
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/features2d/features2d.hpp>
@@ -412,14 +409,14 @@ namespace ORB_SLAM3
             nfeatures(_nfeatures), scaleFactor(_scaleFactor), nlevels(_nlevels),
             iniThFAST(_iniThFAST), minThFAST(_minThFAST)
     {
-        mvScaleFactor.resize(nlevels);
-        mvLevelSigma2.resize(nlevels);
-        mvScaleFactor[0]=1.0f;
-        mvLevelSigma2[0]=1.0f;
+        mvScaleFactor.resize(nlevels);// 存储每层图像缩放系数
+        mvLevelSigma2.resize(nlevels);// 存储每层图像缩放因子的平方
+        mvScaleFactor[0]=1.0f; //对于初始图像，缩放因子是1
+        mvLevelSigma2[0]=1.0f; //对于初始图像，缩放因子的平方也是1
         for(int i=1; i<nlevels; i++)
         {
-            mvScaleFactor[i]=mvScaleFactor[i-1]*scaleFactor;
-            mvLevelSigma2[i]=mvScaleFactor[i]*mvScaleFactor[i];
+            mvScaleFactor[i]=mvScaleFactor[i-1]*scaleFactor;// 每一层的缩放因子通过累乘计算得到
+            mvLevelSigma2[i]=mvScaleFactor[i]*mvScaleFactor[i];// sigma^2 = factor * factor
         }
 
         mvInvScaleFactor.resize(nlevels);
@@ -434,15 +431,18 @@ namespace ORB_SLAM3
 
         mnFeaturesPerLevel.resize(nlevels);
         float factor = 1.0f / scaleFactor;
+        //每层所需要提取的特征点个数
+        //可以参考知乎：https://zhuanlan.zhihu.com/p/61738607
         float nDesiredFeaturesPerScale = nfeatures*(1 - factor)/(1 - (float)pow((double)factor, (double)nlevels));
 
-        int sumFeatures = 0;
+        int sumFeatures = 0;//累计特征点个数
         for( int level = 0; level < nlevels-1; level++ )
         {
-            mnFeaturesPerLevel[level] = cvRound(nDesiredFeaturesPerScale);
+            mnFeaturesPerLevel[level] = cvRound(nDesiredFeaturesPerScale);//cvRound()：返回跟参数最接近的整数值，即四舍五入
             sumFeatures += mnFeaturesPerLevel[level];
             nDesiredFeaturesPerScale *= factor;
         }
+        //由于前面取整操作，导致一些特征点总个数达不到每层指定的特征点提取个数要求，所以将这个压力给到了最高图层中
         mnFeaturesPerLevel[nlevels-1] = std::max(nfeatures - sumFeatures, 0);
 
         const int npoints = 512;
