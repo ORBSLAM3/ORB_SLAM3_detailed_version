@@ -1174,6 +1174,7 @@ namespace ORB_SLAM3
                 copyMakeBorder(image, temp, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD,
                                BORDER_REFLECT_101);
             }
+
         }
 
     }
